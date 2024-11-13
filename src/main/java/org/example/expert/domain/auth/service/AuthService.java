@@ -1,6 +1,7 @@
 package org.example.expert.domain.auth.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.expert.config.JwtUtil;
 import org.example.expert.config.PasswordEncoder;
 import org.example.expert.domain.auth.dto.request.SigninRequest;
@@ -15,6 +16,7 @@ import org.example.expert.domain.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -56,8 +58,9 @@ public class AuthService {
         if (!passwordEncoder.matches(signinRequest.getPassword(), user.getPassword())) {
             throw new AuthException("잘못된 비밀번호입니다.");
         }
-
+        log.info("유저 닉네임 = {}",user.getNickname());
         String bearerToken = jwtUtil.createToken(user.getId(), user.getEmail(),user.getNickname(), user.getUserRole());
+
 
         return new SigninResponse(bearerToken);
     }
