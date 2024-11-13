@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:test;MODE=MySQL
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path : /h2-console
+jwt:
+  secret:
+    key: 79ca00c1083449b14215e5b50e9898449dd5a20cbabff2eeb602092c168a76a1
