@@ -7,7 +7,14 @@ spring:
   h2:
     console:
       enabled: true
-      path : /h2-console
+      path: /h2-console
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
 jwt:
   secret:
     key: 79ca00c1083449b14215e5b50e9898449dd5a20cbabff2eeb602092c168a76a1
