@@ -52,10 +52,12 @@ public class TodoService {
         );
     }
 
-    public Page<TodoResponse> getTodos(int page, int size) {
+    public Page<TodoResponse> getTodos(int page, int size, String weather, LocalDate modifiedAt,LocalDate lastModifiedAt ) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "modifiedAt"));
+        LocalDateTime dateTime = modifiedAt != null ? modifiedAt.atStartOfDay() : LocalDateTime.now();
+        LocalDateTime lastDateTime = lastModifiedAt != null ? lastModifiedAt.atStartOfDay() : LocalDateTime.now();
 
-        Page<Todo> todos = todoRepository.findAllTodos(pageable);
+        Page<Todo> todos = todoRepository.findAllTodos(pageable,weather,dateTime,lastDateTime);
 
         return todos.map(todo -> new TodoResponse(
                 todo.getId(),
