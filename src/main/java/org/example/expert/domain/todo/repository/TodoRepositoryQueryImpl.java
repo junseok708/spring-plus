@@ -9,22 +9,27 @@ import org.example.expert.domain.todo.entity.Todo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
-import java.util.Collections;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
-public class TodoRepositoryQueryImpl implements TodoRepositoryQuery{
+public class TodoRepositoryQueryImpl implements TodoRepositoryQuery {
     private final JPAQueryFactory queryFactory;
-    QTodo todo =QTodo.todo;
+    QTodo todo = QTodo.todo;
 
     @Override
-    public Page<Todo> findAllTodos(Pageable pageable) {
+    public Page<Todo> findAllTodos(Pageable pageable, String weather, LocalDateTime modifiedAt, LocalDateTime lastModifiedAt) {
         List<Todo> todos = queryFactory
                 .selectFrom(todo)
                 .leftJoin(todo.user)
+                .where(
+                        eqWeather(weather),
+                        eqModifiedAt(modifiedAt),
+                        eqModifiedAtPeriod(modifiedAt, lastModifiedAt)
+                )
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
@@ -42,10 +47,24 @@ public class TodoRepositoryQueryImpl implements TodoRepositoryQuery{
     }
 
 
-    /*private BooleanExpression eqWeather(String weather){
-        if(CollectionUtils.isEmpty(weather)){
+    private BooleanExpression eqWeather(String weather) {
+        if (StringUtils.isEmpty(weather)) {
             return null;
         }
         return todo.weather.in(weather);
-    }*/
+    }
+
+    private BooleanExpression eqModifiedAt(LocalDateTime modifiedAt) {
+        if (modifiedAt == null) {
+            return null;
+        }
+        return todo.modifiedAt.goe(modifiedAt);
+    }
+
+    private BooleanExpression eqModifiedAtPeriod(LocalDateTime modifiedAt, LocalDateTime lastModifiedAt) {
+        if (lastModifiedAt == null || modifiedAt == null) {
+            return null;
+        }
+        return todo.modifiedAt.goe(modifiedAt).and(todo.modifiedAt.loe(lastModifiedAt));
+    }
 }
