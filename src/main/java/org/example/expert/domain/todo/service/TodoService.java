@@ -7,6 +7,7 @@ import org.example.expert.domain.common.exception.InvalidRequestException;
 import org.example.expert.domain.todo.dto.request.TodoSaveRequest;
 import org.example.expert.domain.todo.dto.response.TodoResponse;
 import org.example.expert.domain.todo.dto.response.TodoSaveResponse;
+import org.example.expert.domain.todo.dto.response.TodoSearchResponse;
 import org.example.expert.domain.todo.entity.Todo;
 import org.example.expert.domain.todo.repository.TodoRepository;
 import org.example.expert.domain.user.dto.response.UserResponse;
@@ -52,12 +53,13 @@ public class TodoService {
         );
     }
 
-    public Page<TodoResponse> getTodos(int page, int size, String weather, LocalDate modifiedAt,LocalDate lastModifiedAt ) {
+    public Page<TodoResponse> getTodos(
+            int page, int size, String weather, LocalDate modifiedAt, LocalDate lastModifiedAt) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "modifiedAt"));
-        LocalDateTime dateTime = modifiedAt != null ? modifiedAt.atStartOfDay() : LocalDateTime.now();
-        LocalDateTime lastDateTime = lastModifiedAt != null ? lastModifiedAt.atStartOfDay() : LocalDateTime.now();
+        LocalDateTime dateTime = toLocalDateTime(modifiedAt);
+        LocalDateTime lastDateTime = toLocalDateTime(lastModifiedAt);
 
-        Page<Todo> todos = todoRepository.findAllTodos(pageable,weather,dateTime,lastDateTime);
+        Page<Todo> todos = todoRepository.findAllTodos(pageable, weather, dateTime, lastDateTime);
 
         return todos.map(todo -> new TodoResponse(
                 todo.getId(),
@@ -85,5 +87,26 @@ public class TodoService {
                 todo.getCreatedAt(),
                 todo.getModifiedAt()
         );
+    }
+
+    public Page<TodoSearchResponse> getSearchTodos(
+            int page, int size, String title, LocalDate createdAt, LocalDate lastCreatedAt, String nickname) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        LocalDateTime dateTime = toLocalDateTime(createdAt);
+        LocalDateTime lastDateTime = toLocalDateTime(lastCreatedAt);
+
+        Page<TodoSearchResponse> todos = todoRepository
+                .findSearchTodos(pageable, title, dateTime, lastDateTime, nickname);
+
+        return todos.map(
+                todo -> new TodoSearchResponse(
+                        todo.getTitle(),
+                        todo.getAssigneeCount(),
+                        todo.getCompletedCount()
+                ));
+    }
+
+    private LocalDateTime toLocalDateTime(LocalDate date) {
+        return date != null ? date.atStartOfDay() : null;
     }
 }
