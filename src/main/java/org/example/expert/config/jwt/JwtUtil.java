@@ -1,8 +1,6 @@
-package org.example.expert.config;
+package org.example.expert.config.jwt;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -62,5 +60,21 @@ public class JwtUtil {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            return true;
+        } catch (SecurityException | MalformedJwtException e) {
+            log.error("Invalid JWT signature, error :{}", e.getMessage());
+        } catch (ExpiredJwtException e) {
+            log.error("Expired JWT token, error :{}", e.getMessage());
+        } catch (UnsupportedJwtException e) {
+            log.error("Unsupported JWT token, error :{}", e.getMessage());
+        } catch (IllegalArgumentException e) {
+            log.error("JWT claims is empty, error :{}", e.getMessage());
+        }
+        return false;
     }
 }
